@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
@@ -8,13 +8,16 @@ from utils.ranks import get_rank
 
 router = Router()
 
-# Меню из кнопок внизу экрана (сохраняется между сообщениями)
+# Меню из кнопок внизу экрана (сохраняется между сообщениями).
+# Кнопки подписаны человеческими названиями, а ниже — обработчики,
+# которые понимают нажатие каждой кнопки и запускают ту же функцию,
+# что и одноимённая команда.
 menu_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="/price"), KeyboardButton(text="/convert")],
-        [KeyboardButton(text="/news"), KeyboardButton(text="/learn")],
-        [KeyboardButton(text="/top"), KeyboardButton(text="/settings")],
-        [KeyboardButton(text="/help")],
+        [KeyboardButton(text=" Курс"), KeyboardButton(text=" Конвертер")],
+        [KeyboardButton(text=" Новости"), KeyboardButton(text=" Обучение")],
+        [KeyboardButton(text=" Топ"), KeyboardButton(text=" Настройки")],
+        [KeyboardButton(text=" Помощь")],
     ],
     resize_keyboard=True,
     input_field_placeholder="Выбери кнопку или напиши команду",
@@ -33,6 +36,7 @@ async def cmd_start(message: Message, state: FSMContext):
         "конвертирую валюты, расскажу свежие новости и обучу основам.\n\n"
         f"XP: <b>{user['xp']}</b> | Уровень: <b>{user['level']}</b> "
         f"— {get_rank(user['level'])}\n\n"
+        "Кнопки внизу экрана — быстрый доступ ко всем функциям. "
         "Напиши /help — покажу все команды.",
         reply_markup=menu_kb,
     )
@@ -51,7 +55,58 @@ async def cmd_help(message: Message, state: FSMContext):
         "/top — таблица лидеров\n"
         "/settings — настройки и профиль\n"
         "/cancel — отменить конвертацию\n\n"
+        "Те же функции доступны кнопками внизу экрана.\n\n"
         "За активность ты получаешь <b>XP</b>, повышаешь уровень "
         "и получаешь новые звания!",
         reply_markup=menu_kb,
     )
+
+
+# ==== Обработчики нажатий на кнопки меню ====
+# Каждая кнопка запускает ту же функцию, что и одноимённая команда.
+
+@router.message(F.text == " Курс")
+async def btn_price(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.price import cmd_price
+    await cmd_price(message)
+
+
+@router.message(F.text == " Конвертер")
+async def btn_convert(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.convert import cmd_convert
+    await cmd_convert(message, state)
+
+
+@router.message(F.text == " Новости")
+async def btn_news(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.news import cmd_news
+    await cmd_news(message)
+
+
+@router.message(F.text == " Обучение")
+async def btn_learn(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.learn import cmd_learn
+    await cmd_learn(message)
+
+
+@router.message(F.text == " Топ")
+async def btn_top(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.rating import cmd_top
+    await cmd_top(message)
+
+
+@router.message(F.text == " Настройки")
+async def btn_settings(message: Message, state: FSMContext):
+    await state.clear()
+    from handlers.settings import cmd_settings
+    await cmd_settings(message)
+
+
+@router.message(F.text == " Помощь")
+async def btn_help(message: Message, state: FSMContext):
+    await cmd_help(message, state)
