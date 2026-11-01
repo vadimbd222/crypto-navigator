@@ -8,10 +8,7 @@ from utils.ranks import get_rank
 
 router = Router()
 
-# Меню из кнопок внизу экрана (сохраняется между сообщениями).
-# Кнопки подписаны человеческими названиями, а ниже — обработчики,
-# которые понимают нажатие каждой кнопки и запускают ту же функцию,
-# что и одноимённая команда.
+
 menu_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=" Курс"), KeyboardButton(text=" Конвертер")],
@@ -62,8 +59,7 @@ async def cmd_help(message: Message, state: FSMContext):
     )
 
 
-# ==== Обработчики нажатий на кнопки меню ====
-# Каждая кнопка запускает ту же функцию, что и одноимённая команда.
+
 
 @router.message(F.text == " Курс")
 async def btn_price(message: Message, state: FSMContext):
